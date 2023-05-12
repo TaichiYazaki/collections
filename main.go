@@ -58,24 +58,7 @@ func sectionToCsv() {
 	}
 }
 
-func sortSection() [][]string {
-	f, err := os.Open("section.csv")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	r := csv.NewReader(f)
-	records, err := r.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-	sort.Slice(records, func(i, j int) bool {
-		return records[i][0] < records[j][0]
-	})
-	return records
-}
-
-func sortSectionToCsv() {
+func sortSection() {
 	f, err := os.Open("section.csv")
 	if err != nil {
 		log.Fatal(err)
@@ -121,5 +104,5 @@ func (l List) Less(i, j int) bool {
 
 func main() {
 	sectionToCsv()
-	sortSectionToCsv()
+	sortSection()
 }
