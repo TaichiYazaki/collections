@@ -87,11 +87,8 @@ func sortSectionToCsv() {
 	
 	var c []Collection
 	for _, v := range l {
-		l := Collection{
-			Name : v.Name,
-			Value: v.Value,
-		}
-	c = append(c, l)
+		l := Collection(v)
+		c = append(c, l)
 	}
 	// CSVをリセットするためのコード開始
 	if _, err := os.Stat("result.csv"); err == nil {
