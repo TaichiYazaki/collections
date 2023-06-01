@@ -8,12 +8,13 @@ import (
 	"sort"
 	"time"
 
+	"github.com/gocarina/gocsv"
 	"github.com/gocolly/colly"
 )
 
 type Collection struct {
-	name  string  
-	value int	
+	Name  string  
+	Value int	
 }
 
 type List []Collection
@@ -33,10 +34,12 @@ func getReadmeURL() []string {
 func sectionToCsv() {
 	c := colly.NewCollector()
 	u := "article.markdown-body.entry-content.container-lg >h2"
+	// CSVをリセットするためのコード開始
 	if _, err := os.Stat("section.csv"); err == nil {
 		r := os.Remove("section.csv")
 		fmt.Println(r, "section.csvをリセット")
 	}
+	// 終了
 	c.OnHTML(u, func(h *colly.HTMLElement) {
 		var section []string
 		sections := append(section, h.DOM.Text())
@@ -58,7 +61,7 @@ func sectionToCsv() {
 	}
 }
 
-func sortSection() {
+func sortSectionToCsv() {
 	f, err := os.Open("section.csv")
 	if err != nil {
 		log.Fatal(err)
@@ -81,28 +84,45 @@ func sortSection() {
 		l = append(l,c)
 	}
 	sort.Sort(l)
+	
+	var c []Collection
 	for _, v := range l {
-		fmt.Println(v)
+		l := Collection(v)
+		c = append(c, l)
 	}
+	// CSVをリセットするためのコード開始
+	if _, err := os.Stat("result.csv"); err == nil {
+		r := os.Remove("result.csv")
+		fmt.Println(r, "result.csvをリセット")
+	}
+	// 終了
+	fi, err := os.OpenFile("reult.csv", os.O_CREATE|os.O_APPEND, os.ModePerm)
+	if err !=nil{
+		log.Fatal(err)
+	}
+	defer fi.Close()
+	gocsv.MarshalFile(c, fi)
 }
 
+//並べ替えるコレクションの要素数を取得
 func (l List) Len() int {
 	return len(l)
 }
 
+// 隣り合うに要素でどのような条件を満たした場合にSwapメソッドを実行するのか定義
+func (l List) Less(i, j int) bool {
+	if l[i].Value == l[j].Value {
+		return (l[i].Name < l[j].Name)
+	} else {
+		return (l[i].Value > l[j].Value)
+	}
+}
+// 隣り合う二要素に対してソートで入れ替えを行う際にどのような入れ替えを行うのか定義
 func (l List) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }
 
-func (l List) Less(i, j int) bool {
-	if l[i].value == l[j].value {
-		return (l[i].name < l[j].name)
-	} else {
-		return (l[i].value > l[j].value)
-	}
-}
-
 func main() {
 	sectionToCsv()
-	sortSection()
+	sortSectionToCsv()
 }
